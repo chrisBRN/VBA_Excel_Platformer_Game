@@ -1,0 +1,97 @@
+Option Explicit
+
+Public Sub Main()
+
+    Dim gameSheetName As String
+    gameSheetName = "Game"
+    
+    Call addSheetNamed(gameSheetName)
+    Dim gameSheet As Worksheet
+    Set gameSheet = Worksheets(gameSheetName)
+    deleteSheetsNotNamed (gameSheetName)
+        
+    'resize the rows and columns (4 pixels)
+    Worksheets(gameSheetName).Cells.ColumnWidth = 0.33
+    Worksheets(gameSheetName).Cells.RowHeight = 3
+    
+    Call TurnOffWindowFeatures(gameSheet)
+    
+    
+    'hide gridlines and row/column headings
+    'ActiveWindow.DisplayGridlines = False
+    'ActiveWindow.DisplayHeadings = False
+    
+    
+    
+End Sub
+
+Function sheetExists(shName As String) As Boolean
+' checks all sheets for the existance of given sheet and returns true/false
+
+    Dim i As Integer
+
+    For i = 1 To Worksheets.Count
+        If Worksheets(i).Name = shName Then
+            sheetExists = True
+            Exit For
+        End If
+    Next i
+
+End Function
+
+Function addSheetNamed(shName As String) As Worksheet
+
+    Application.DisplayAlerts = False
+
+    Dim exists As Boolean
+    exists = sheetExists(shName)
+
+    Dim sh As Worksheet
+    
+    If Not exists Then
+        Set sh = Worksheets.Add
+        sh.Name = shName
+    Else
+        ' If the sheet already exits we should delete it before creating a new one
+        Set sh = Worksheets.Add
+        sh.Name = "Temp" ' Prevent cannot delete lastsheet error
+        Worksheets(shName).Delete
+        sh.Name = shName
+        
+    End If
+
+    Application.DisplayAlerts = True
+
+End Function
+
+Sub deleteSheetsNotNamed(shName As String)
+
+    Application.DisplayAlerts = False
+
+    Dim sh As Worksheet
+
+    On Error Resume Next
+    ' Error will trigger if there is no sheet named shName,
+    ' However this should only be possible if the preceding sub "addSheetNamed" hasn't been called or has stalled/errored itself
+    For Each sh In Worksheets
+        If sh.Name <> shName Then sh.Delete
+    Next
+    
+    Application.DisplayAlerts = True
+
+End Sub
+
+
+Private Sub TurnOffWindowFeatures(target As Worksheet)
+'https://stackoverflow.com/questions/40368373/how-can-i-turn-off-gridlines-in-excel-using-vba-without-using-activewindow
+    Dim view As WorksheetView
+    For Each view In target.Parent.Windows(1).SheetViews
+        If view.sheet.Name = target.Name Then
+            view.DisplayGridlines = False
+            view.DisplayHeadings = False
+            view.DisplayFormulas = False
+            view.DisplayOutline = False
+            Exit Sub
+        End If
+    Next
+End Sub

@@ -1,53 +1,80 @@
 Option Explicit
 
-Public Sub Main()
+Public Sub main()
 
-    Dim gameSheetName As String
+    Call set_up_main_sheet("Game")
+    Call set_up_window_size_and_position(1, 1, 480, 320)
+    Call display_window_features(False)
+    
+End Sub
+
+Sub set_up_main_sheet(gameSheetName As String)
+
     gameSheetName = "Game"
     
-    Call addSheetNamed(gameSheetName)
+    Call add_sheet_named(gameSheetName)
     Dim gameSheet As Worksheet
     Set gameSheet = Worksheets(gameSheetName)
-    deleteSheetsNotNamed (gameSheetName)
+    delete_sheets_not_named (gameSheetName)
         
     'resize the rows and columns (4 pixels)
     Worksheets(gameSheetName).Cells.ColumnWidth = 0.33
     Worksheets(gameSheetName).Cells.RowHeight = 3
     
-    Call TurnOffWindowFeatures(gameSheet)
     
     
-    'hide gridlines and row/column headings
-    'ActiveWindow.DisplayGridlines = False
-    'ActiveWindow.DisplayHeadings = False
-    
+    'ActiveWindow.PointsToScreenPixelsX (Columns(1).width)
     
     
 End Sub
 
-Function sheetExists(shName As String) As Boolean
+
+Sub set_up_window_size_and_position(startXPosition As Integer, startYPosition As Integer, desiredWidth As Integer, desiredHeight As Integer)
+
+    With Application
+        .WindowState = xlMaximized
+        
+        If desiredWidth > Application.width - startXPosition Then
+            desiredWidth = Application.width - startXPosition
+        End If
+        
+        If desiredHeight > Application.Height - startYPosition Then
+            desiredHeight = Application.Height - startYPosition
+        End If
+
+        .WindowState = xlNormal
+    End With
+    
+    With Application
+        .Top = startYPosition
+        .Left = startXPosition
+        .width = desiredWidth
+        .Height = desiredHeight
+    End With
+
+End Sub
+
+Function sheet_exists(shName As String) As Boolean
 ' checks all sheets for the existance of given sheet and returns true/false
 
     Dim i As Integer
-
     For i = 1 To Worksheets.Count
         If Worksheets(i).Name = shName Then
-            sheetExists = True
+            sheet_exists = True
             Exit For
         End If
     Next i
 
 End Function
 
-Function addSheetNamed(shName As String) As Worksheet
+Function add_sheet_named(shName As String) As Worksheet
 
     Application.DisplayAlerts = False
 
     Dim exists As Boolean
-    exists = sheetExists(shName)
+    exists = sheet_exists(shName)
 
     Dim sh As Worksheet
-    
     If Not exists Then
         Set sh = Worksheets.Add
         sh.Name = shName
@@ -57,22 +84,20 @@ Function addSheetNamed(shName As String) As Worksheet
         sh.Name = "Temp" ' Prevent cannot delete lastsheet error
         Worksheets(shName).Delete
         sh.Name = shName
-        
     End If
 
     Application.DisplayAlerts = True
 
 End Function
 
-Sub deleteSheetsNotNamed(shName As String)
+Sub delete_sheets_not_named(shName As String)
 
     Application.DisplayAlerts = False
 
     Dim sh As Worksheet
-
     On Error Resume Next
     ' Error will trigger if there is no sheet named shName,
-    ' However this should only be possible if the preceding sub "addSheetNamed" hasn't been called or has stalled/errored itself
+    ' However this should only be possible if the preceding sub "add_sheet_named" hasn't been called or has stalled/errored itself
     For Each sh In Worksheets
         If sh.Name <> shName Then sh.Delete
     Next
@@ -81,17 +106,19 @@ Sub deleteSheetsNotNamed(shName As String)
 
 End Sub
 
+Sub display_window_features(display As Boolean)
+    
+    ' Hides/shows formula bar, scroll bars, status bar & ribbon
+    With Application
+        .ExecuteExcel4Macro "show.toolbar(""Ribbon""," + CStr(display) + ")"
+        .DisplayFormulaBar = display
+        .DisplayScrollBars = display
+        .DisplayStatusBar = display
+        .DisplayFullScreen = display
+    End With
+    
+    ' Hides/shows gridlines & headings
+    ActiveWindow.DisplayGridlines = display
+    ActiveWindow.DisplayHeadings = display
 
-Private Sub TurnOffWindowFeatures(target As Worksheet)
-'https://stackoverflow.com/questions/40368373/how-can-i-turn-off-gridlines-in-excel-using-vba-without-using-activewindow
-    Dim view As WorksheetView
-    For Each view In target.Parent.Windows(1).SheetViews
-        If view.sheet.Name = target.Name Then
-            view.DisplayGridlines = False
-            view.DisplayHeadings = False
-            view.DisplayFormulas = False
-            view.DisplayOutline = False
-            Exit Sub
-        End If
-    Next
 End Sub

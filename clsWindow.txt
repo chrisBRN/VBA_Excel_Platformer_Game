@@ -1,0 +1,136 @@
+Option Explicit
+
+Private cellsWide As Integer
+Private cellsHigh As Integer
+
+Private tLCell As String
+Private tRCell As String
+Private bLCell As String
+Private bRCell As String
+
+Private Sub Class_Initialize()
+
+    Application.ScreenUpdating = False
+    
+    ' Create a workbook with one sheet
+    Workbooks.Add (xlWBATWorksheet)
+        
+    Dim windowWide As Integer
+    Dim windowHigh As Integer
+            
+    ' Set Window dimensions & position
+    With Application
+        .WindowState = xlNormal ' Avoids error due to prior maximised windowstate
+        .Top = 1
+        .Left = 1
+        .width = GetSystemMetrics(SM_CXSCREEN) / 4
+        .height = GetSystemMetrics(SM_CYSCREEN) / 3
+    End With
+    
+    'add games name to titlebar
+    Application.Caption = SHEET_NAME
+   
+    ' initilises the sheet
+    Sheets(1).NAME = SHEET_NAME
+
+    ' Sets all cells to be square
+    Cells(1, 1).ColumnWidth = 1
+    With Cells(1, 1)
+        Cells.RowHeight = .width
+        Cells.ColumnWidth = .ColumnWidth
+    End With
+
+    ' Turns off formula bar, scroll bars, status bar, ribbon, status bar & ribbon
+    Call display_features(False)
+        
+    ' Assign dimension variables based on window & sheet dimensions
+    cellsWide = calc_cells_wide()
+    cellsHigh = calc_cells_high()
+    
+    ' Assign corner cells
+    tLCell = Cells(1, 1).Address(1, 1)
+    tRCell = Cells(cellsWide, 1).Address(1, 1)
+    bLCell = Cells(cellsHigh, 1).Address(1, 1)
+    bRCell = Cells(cellsHigh, cellsWide).Address(1, 1)
+    
+    Application.ScreenUpdating = True
+
+End Sub
+' TODO add this to on close
+Private Sub display_features(display As Boolean)
+    
+    ' Hides/shows formula bar, scroll bars, status bar & ribbon
+    With Application
+        .ExecuteExcel4Macro "show.toolbar(""Ribbon""," + CStr(display) + ")"
+        .DisplayFormulaBar = display
+        .DisplayScrollBars = display
+        .DisplayStatusBar = display
+    End With
+    
+    ' Hides/shows gridlines & headings
+    ActiveWindow.DisplayGridlines = display
+    ActiveWindow.DisplayHeadings = display
+
+End Sub
+
+Private Function calc_cells_wide()
+
+    ' gets the width in "cells" rounded up to the nearest even number
+    Dim cellsWide As Integer
+    cellsWide = Application.width / Cells(1, 1).width 'truncates to int from double
+           
+    If (cellsWide Mod 2) <> 0 Then
+        cellsWide = cellsWide + 1
+    End If
+         
+    calc_cells_wide = cellsWide
+    
+End Function
+
+Private Function calc_cells_high()
+
+    ' gets the height in "cells" rounded up to the nearest even number
+    Dim cellsHigh As Integer
+    cellsHigh = Application.height / Cells(1, 1).height 'truncates to int from double
+  
+    If (cellsHigh Mod 2) <> 0 Then
+        cellsHigh = cellsHigh + 1
+    End If
+         
+    calc_cells_high = cellsHigh
+
+End Function
+
+Private Sub Class_Terminate()
+
+    'TODO uncomment this to ensure proper clean up once game loop is up and running
+    'display_features (True)
+    
+End Sub
+
+' /////////////////////////////////////////////////////////////////////////////
+' Getters /////////////////////////////////////////////////////////////////////
+' /////////////////////////////////////////////////////////////////////////////
+
+Public Function get_cells_wide()
+    get_cells_wide = cellsWide
+End Function
+Public Function get_cells_high()
+    get_cells_high = cellsHigh
+End Function
+Public Function get_top_left_cell()
+    get_top_left_cell = tLCell
+End Function
+Public Function get_top_right_cell()
+    get_top_right_cell = tRCell
+End Function
+Public Function get_bottom_left_cell()
+    get_bottom_left_cell = bLCell
+End Function
+Public Function get_bottom_right_cell()
+    get_bottom_right_cell = bRCell
+End Function
+
+
+
+

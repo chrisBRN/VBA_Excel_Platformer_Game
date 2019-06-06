@@ -9,9 +9,9 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+' TODO replace all of these and associate usage with an array
 Private cellsWide As Integer
 Private cellsHigh As Integer
-
 Private tLCell As String
 Private tRCell As String
 Private bLCell As String
@@ -19,7 +19,7 @@ Private bRCell As String
 
 Private Sub Class_Initialize()
     
-    ActiveWorkbook.Application.DisplayAlerts = False
+    Application.DisplayAlerts = False
     
     Call create_sheet
     
@@ -32,15 +32,17 @@ Private Sub Class_Initialize()
         Cells.RowHeight = .width
         Cells.ColumnWidth = .ColumnWidth
     End With
+        
+    ' Ensures a maximised window does not crash when dims/position are set
+    ActiveWindow.WindowState = xlNormal
+    Application.WindowState = xlNormal
             
     ' Set Window dimensions & position
     With Application
-        .WindowState = xlNormal ' Avoids error due to prior maximised windowstate
-        .Top = 1
-        .Left = 1
         .width = Cells(1, 1).height * 128
         .height = (Cells(1, 1).width * 64) - TitleBarHeight + 0.5
-        '.Caption = SHEET_NAME 'add games name to titlebar
+        .Top = 200
+        .Left = 200
     End With
     
     ' Assign dimension variables based on window & sheet dimensions
@@ -50,36 +52,34 @@ Private Sub Class_Initialize()
     ' Turns off formula bar, scroll bars, status bar, ribbon, status bar & ribbon
     Call display_features(False)
     
+    Application.DisplayAlerts = False
+    
     ' Assign corner cells
     tLCell = Cells(1, 1).Address(1, 1)
     tRCell = Cells(cellsWide, 1).Address(1, 1)
     bLCell = Cells(cellsHigh, 1).Address(1, 1)
     bRCell = Cells(cellsHigh, cellsWide).Address(1, 1)
     
-    Cells.Clear ' not sure why this is needed but it seems to help remove latent colours
-    
 End Sub
 
 Private Sub create_sheet()
     
-    ActiveWorkbook.Application.DisplayAlerts = False
+    Application.DisplayAlerts = False
     
-    'With ThisWorkbook
+    ' Add a sheet placed as first sheet
+    Dim sh As Worksheet
+    Set sh = Worksheets.Add(Before:=Worksheets(1))
     
-        Dim sh As Worksheet
-        Set sh = Worksheets.Add(Before:=Worksheets(1))
-        
-        'deletes all but first sheet
-        Dim i As Integer
-        For i = 2 To Worksheets.Count
-            Worksheets(i).Delete
-        Next i
-        
-        Worksheets(1).NAME = SHEET_NAME
+    'deletes all but first sheet
+    Dim i As Integer
+    For i = 2 To Worksheets.Count
+        Worksheets(i).Delete
+    Next i
     
-   ' End With
+    ' Adds sheet name
+    Worksheets(1).NAME = SHEET_NAME
     
-    ActiveWorkbook.Application.DisplayAlerts = True
+    Application.DisplayAlerts = True
 
 End Sub
 
@@ -104,11 +104,7 @@ Private Function calc_cells_wide()
     ' gets the width in "cells" rounded up to the nearest even number
     Dim cellsWide As Integer
     cellsWide = Application.width / Cells(1, 1).width 'truncates to int from double
-            
-    If (cellsWide Mod 2) <> 0 Then
-        cellsWide = cellsWide - 1
-    End If
-            
+    If (cellsWide Mod 2) <> 0 Then cellsWide = cellsWide - 1
     calc_cells_wide = cellsWide
     
 End Function
@@ -118,18 +114,10 @@ Private Function calc_cells_high()
     ' gets the height in "cells" rounded up to the nearest even number
     Dim cellsHigh As Integer
     cellsHigh = Application.height / Cells(1, 1).height - 1 'truncates to int from double
-                      
-    If (cellsHigh Mod 2) <> 0 Then
-        cellsHigh = cellsHigh - 1
-    End If
-           
+    If (cellsHigh Mod 2) <> 0 Then cellsHigh = cellsHigh - 1
     calc_cells_high = cellsHigh
 
 End Function
-
-' /////////////////////////////////////////////////////////////////////////////
-' Getters /////////////////////////////////////////////////////////////////////
-' /////////////////////////////////////////////////////////////////////////////
 
 Public Function get_cells_wide()
     get_cells_wide = cellsWide

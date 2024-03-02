@@ -1,5 +1,5 @@
 # VBA_Excel_Platformer_Game
-A Work In Progress Platformer Game Built Using An Object Orientated Approach In VBA Excel 
+~~A Work In Progress~~ An Unfinished Platformer Game Built Using An Object Orientated Approach In VBA Excel 
 
 ## Exciting! In Game Graphics
 ![In Game](https://github.com/chrisBRN/VBA_Excel_Platformer_Game/blob/master/Screen_Capture.gif "In Game")
